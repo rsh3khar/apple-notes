@@ -15,10 +15,25 @@ import argparse
 import subprocess
 import sys
 import re
+import threading
+import time
 from pathlib import Path
 from dataclasses import dataclass
 
 from markdownify import markdownify
+
+SPINNER_CHARS = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
+
+
+def spinner(message: str, stop_event: threading.Event) -> None:
+    i = 0
+    while not stop_event.is_set():
+        sys.stderr.write(f"\r{SPINNER_CHARS[i % len(SPINNER_CHARS)]} {message}")
+        sys.stderr.flush()
+        i += 1
+        stop_event.wait(0.1)
+    sys.stderr.write(f"\r\033[2K")
+    sys.stderr.flush()
 
 
 @dataclass
@@ -43,13 +58,20 @@ class Note:
         return name
 
 
-def run_applescript(script: str) -> str:
-    result = subprocess.run(
-        ["osascript", "-e", script],
-        capture_output=True,
-        text=True,
-        timeout=120,
-    )
+def run_applescript(script: str, message: str = "Working...") -> str:
+    stop = threading.Event()
+    t = threading.Thread(target=spinner, args=(message, stop), daemon=True)
+    t.start()
+    try:
+        result = subprocess.run(
+            ["osascript", "-e", script],
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+    finally:
+        stop.set()
+        t.join()
     if result.returncode != 0:
         print(f"AppleScript error: {result.stderr.strip()}", file=sys.stderr)
         sys.exit(1)
@@ -80,7 +102,7 @@ tell application "Notes"
     return output
 end tell
 """
-    raw = run_applescript(script)
+    raw = run_applescript(script, "Fetching folders...")
 
     tree = {}
     # Parse top-level folders
@@ -154,7 +176,7 @@ def fetch_notes(folder_path: str, last_n: int = None) -> list[Note]:
 
     folder_ref = _folder_ref(folder_path)
     script = FETCH_NOTES_TEMPLATE.format(folder_ref=folder_ref, limit_clause=limit_clause)
-    raw = run_applescript(script)
+    raw = run_applescript(script, f"Fetching notes from '{folder_path}'...")
 
     notes = []
     for block in raw.split("<<<NOTE_START>>>"):
