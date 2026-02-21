@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "apple-notes"
+version = "0.1.0"
+description = "Export Apple Notes to Markdown files"
+requires-python = ">=3.8"
+dependencies = ["markdownify>=0.11"]
+
+[project.scripts]
+apple-notes = "export_notes:main"
