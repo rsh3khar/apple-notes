@@ -2,29 +2,34 @@
 
 Export Apple Notes to Markdown files. Uses AppleScript under the hood — no database hacking, no special permissions.
 
-## Requirements
+## Install
 
-- macOS
-- Python 3.8+
-- `markdownify` (`pip install markdownify`)
+```bash
+pipx install git+https://github.com/rsh3khar/apple-notes.git
+```
+
+Requires macOS and Python 3.8+. If you don't have pipx: `brew install pipx`.
 
 ## Usage
 
 ```bash
-# List all folders
-python export_notes.py --list-folders
+# List all folders (with nested structure)
+apple-notes --list-folders
 
 # Export an entire folder
-python export_notes.py --folder "My Notes"
+apple-notes --folder "My Notes"
+
+# Export with subfolders
+apple-notes --folder "My Notes" --recursive
 
 # Export last 7 notes only
-python export_notes.py --folder "My Notes" --last 7
+apple-notes --folder "My Notes" --last 7
 
 # Export to a specific directory
-python export_notes.py --folder "My Notes" --output ~/Desktop/notes
+apple-notes --folder "My Notes" --output ~/Desktop/notes
 
 # Skip YAML frontmatter
-python export_notes.py --folder "My Notes" --no-metadata
+apple-notes --folder "My Notes" --no-metadata
 ```
 
 ## Output
