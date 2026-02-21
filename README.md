@@ -1,6 +1,6 @@
 # apple-notes
 
-Export Apple Notes to Markdown files. Uses AppleScript under the hood — no database hacking, no special permissions.
+A CLI to export Apple Notes to clean Markdown files. Handles nested folders, bullet points, headings — everything except attachments.
 
 ## Install
 
